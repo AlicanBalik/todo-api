@@ -1,25 +1,32 @@
 /**
  * Created by alicanbalik on 10/9/16.
  */
-//Example displaying static array with GET
+//  Example displaying Dynamic array with POST
 var express = require('express');
+var bodyParser = require('body-parser');
+
 var app = express(); // we call express variable as a function.
 var PORT = process.env.PORT || 1992;
-var todos = [{
-    id: 1,
-    description: 'Find a girl!',
-    completed: false
-},
-    {
-        id: 2,
-        description: 'be a successfull programmer!',
-        completed: false
-    },
-    {
-        id: 3,
-        description: 'don\'t die today!',
-        completed: true
-    }];
+// var todos = [{
+//     id: 1,
+//     description: 'Find a girl!',
+//     completed: false
+// },
+//     {
+//         id: 2,
+//         description: 'be a successfull programmer!',
+//         completed: false
+//     },
+//     {
+//         id: 3,
+//         description: 'don\'t die today!',
+//         completed: true
+//     }];
+var todos = [];
+var todoNextId = 1; //for increasing id numbers.
+
+// anytime a json request comes in, express is gonna parse it and we are gonna be able to access it via request.body
+app.use(bodyParser.json());
 
 app.get('/', function (req, res) {
     res.send('Homepage!');
@@ -44,12 +51,27 @@ app.get('/todos/:id', function (req, res) {
         }
     });
 
-        if (matchedTodo) {
-            res.json(matchedTodo);
-        } else {
-            res.status(404).send();
-        }
+    if (matchedTodo) {
+        res.json(matchedTodo);
+    } else {
+        res.status(404).send();
+    }
 
+});
+
+// POST /todos
+// use new npm dependency called body-parser - npm install body-parser@1.13.3 --save
+app.post('/todos', function(req, res) {
+    var body = req.body;
+
+    //add id field
+    body.id = todoNextId++;
+    body.test = 'testing id:';
+
+    //push body into array
+    todos.push(body);
+
+    res.json(body); //pass back body to user.
 });
 
 
