@@ -22,7 +22,7 @@ var todos = [{
     }];
 
 app.get('/', function (req, res) {
-    res.send('Tirmala beni kasi beni, gotur beni yatir beni!');
+    res.send('Homepage!');
 });
 
 // GET /todos
@@ -43,7 +43,7 @@ app.get('/todos/:id', function (req, res) {
             matchedTodo = todo;
         }
     });
-    
+
         if (matchedTodo) {
             res.json(matchedTodo);
         } else {
