@@ -1,23 +1,23 @@
 /**
  * Created by alicanbalik on 10/9/16.
  */
-
+//Example displaying static array with GET
 var express = require('express');
 var app = express(); // we call express variable as a function.
 var PORT = process.env.PORT || 1992;
 var todos = [{
     id: 1,
-    description: 'Find a girl',
+    description: 'Find a girl!',
     completed: false
 },
     {
         id: 2,
-        description: 'be a successfull programmer',
+        description: 'be a successfull programmer!',
         completed: false
     },
     {
         id: 3,
-        description: 'don\'t die today',
+        description: 'don\'t die today!',
         completed: true
     }];
 
