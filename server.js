@@ -37,25 +37,48 @@ app.get('/', function (req, res) {
 
 // GET /todos   GET /todos?completed=true&q=work
 app.get('/todos', function (req, res) {
-    var queryParams = req.query; //enables querying
-    var filteredTodos = todos;
+    // var queryParams = req.query; //enables querying
+    // var filteredTodos = todos;
+    //
+    // // if has property && completed === 'true'
+    // // filteredTodos = _.where(filteredTodos, ?); ?'s some object that you are gonna filter to use.
+    // //else if has property && completed === 'false'
+    // if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+    //     filteredTodos = _.where(filteredTodos, {completed: true});
+    // } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+    //     filteredTodos = _.where(filteredTodos, {completed: false});
+    // }
+    // // q=work
+    // if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
+    //     filteredTodos = _.filter(filteredTodos, function (todo) {
+    //         return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+    //     }); //toLowerCase removes case sensetive while searching.
+    // }
+    // //always convert arrays to json and below code returns 200 automatically if successfull.
+    // res.json(filteredTodos); //before adding filtering, we wrote json(todos);
+    //////////////
+    // use it with sequelize
+    var query = req.query;
+    var where = {};
 
-    // if has property && completed === 'true'
-    // filteredTodos = _.where(filteredTodos, ?); ?'s some object that you are gonna filter to use.
-    //else if has property && completed === 'false'
-    if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-        filteredTodos = _.where(filteredTodos, {completed: true});
-    } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-        filteredTodos = _.where(filteredTodos, {completed: false});
+    if (query.hasOwnProperty('completed') && query.completed === 'true') {
+        where.completed = true;
+    } else if (query.hasOwnProperty('completed') && query.completed === 'false') {
+        where.completed = false;
     }
-    // q=work
-    if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
-        filteredTodos = _.filter(filteredTodos, function (todo) {
-            return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-        }); //toLowerCase removes case sensetive while searching.
+
+    if (query.hasOwnProperty('q') && query.q.length > 0) {
+        where.description = {
+            $like : '%' + query.q + '%'
     }
-    //always convert arrays to json and below code returns 200 automatically if successfull.
-    res.json(filteredTodos); //before adding filtering, we wrote json(todos);
+        ;
+    }
+
+    db.todo.findAll({where: where}).then(function (todos) {
+        res.json(todos);
+    }, function(err) {
+        res.status(500).send();
+    });
 });
 // GET /todos/:id
 app.get('/todos/:id', function (req, res) {
@@ -82,14 +105,14 @@ app.get('/todos/:id', function (req, res) {
     // }
     ///////////
     ////use it with sequelize
-    db.todo.findById(todoId).then(function(todo) {
-        if(!!todo){ // means taking the value that is not a boolean. Its either an object, or null. You convert it into its truthty.
-        // e.g: object is truthy, you put !! it becomes a boolean, in case of null, ! would flip it to true, 2nd ! would flip it to falase.
+    db.todo.findById(todoId).then(function (todo) {
+        if (!!todo) { // means taking the value that is not a boolean. Its either an object, or null. You convert it into its truthty.
+            // e.g: object is truthy, you put !! it becomes a boolean, in case of null, ! would flip it to true, 2nd ! would flip it to falase.
             res.json(todo.toJSON());
         } else {
             res.status(404).send();
         }
-    }, function(err){
+    }, function (err) {
         res.status(500).json(err);
         //500 = internal server error. Show if server crashes, or there is issue with db.
     })
@@ -124,9 +147,9 @@ app.post('/todos', function (req, res) {
     //challenge: call create on db.todo
     //  responsd with 200 and value of todo object.(use .toJSON()
     //  else, show error (res.status(400).json(err);
-    db.todo.create(body).then(function(todo){
+    db.todo.create(body).then(function (todo) {
         res.json(todo.toJSON());
-    }, function(err){
+    }, function (err) {
         res.status(400).json(err);
     })
 
