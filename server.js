@@ -62,25 +62,37 @@ app.get('/todos/:id', function (req, res) {
     //we have to parse req.params.id to int because any request parameters are always STRING. In order to match it with an INT number, we have to convert it.
     var todoId = parseInt(req.params.id, 10); //parseInt(string, radix);
     // Specify 10 for the decimal numeral system commonly used by humans
-    // Iterate over todos array. Find the match.
-
-    // var matchedTodo;
-    // todos.forEach(function (todo) {
-    //     //todoId was string, todo.id was int. We converted todoId to INT above.
-    //     if (todoId === todo.id) {
-    //         matchedTodo = todo;
-    //     }
-    // });
-    //ustteki kodu kullanmak yerine underscore kutuphanesinden _.findWhere fonksiyonunu kullanabiliriz.
-    var matchedTodo = _.findWhere(todos, {id: todoId});
-    //_.findwhere is a function from underscore library.
-    //_.findWhere(list, properties)
-    if (matchedTodo) {
-        res.json(matchedTodo);
-    } else {
-        res.status(404).send();
-    }
-
+    // // Iterate over todos array. Find the match.
+    //
+    // // var matchedTodo;
+    // // todos.forEach(function (todo) {
+    // //     //todoId was string, todo.id was int. We converted todoId to INT above.
+    // //     if (todoId === todo.id) {
+    // //         matchedTodo = todo;
+    // //     }
+    // // });
+    // //ustteki kodu kullanmak yerine underscore kutuphanesinden _.findWhere fonksiyonunu kullanabiliriz.
+    // var matchedTodo = _.findWhere(todos, {id: todoId});
+    // //_.findwhere is a function from underscore library.
+    // //_.findWhere(list, properties)
+    // if (matchedTodo) {
+    //     res.json(matchedTodo);
+    // } else {
+    //     res.status(404).send();
+    // }
+    ///////////
+    ////use it with sequelize
+    db.todo.findById(todoId).then(function(todo) {
+        if(!!todo){ // means taking the value that is not a boolean. Its either an object, or null. You convert it into its truthty.
+        // e.g: object is truthy, you put !! it becomes a boolean, in case of null, ! would flip it to true, 2nd ! would flip it to falase.
+            res.json(todo.toJSON());
+        } else {
+            res.status(404).send();
+        }
+    }, function(err){
+        res.status(500).json(err);
+        //500 = internal server error. Show if server crashes, or there is issue with db.
+    })
 });
 
 // POST /todos

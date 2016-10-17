@@ -20,4 +20,5 @@ module.exports = function (sequelize, dataTypes) {
             defaultValue: false //if user doesn't enter completed variable, program makes it false(0) by default.
         }
     });
+
 };
