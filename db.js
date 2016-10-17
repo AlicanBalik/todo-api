@@ -11,10 +11,20 @@
 // thats why db.js and server.js are in the same root.
 
 var Sequelize = require('sequelize');
-var sequelize = new Sequelize(undefined, undefined, undefined, { //4th parameter is object
-    'dialect': 'sqlite',
-    'storage': __dirname + '/data/dev-todo-api.sqlite'
-});
+var env = process.env.NODE_ENV || 'development';
+var sequelize;
+
+if (env === 'production') {// this is gonna be only true when heroku gets ran.
+    sequelize = new Sequelize(process.env.DATABASE_URL, {
+        'dialect': 'postgres',
+    });
+} else {
+    sequelize = new Sequelize(undefined, undefined, undefined, { //4th parameter is object
+        'dialect': 'sqlite',
+        'storage': __dirname + '/data/dev-todo-api.sqlite'
+    });
+} // if env is production, that means the project is working on heroku. Heroku calls postgre database, if the program is working on local, it'll call sqlite as db
+
 var db = {}; // for exporting multiple files
 
 //set db to todo property.
