@@ -34,7 +34,7 @@ app.get('/', function (req, res) {
     res.send('Homepage!');
 });
 
-// GET /todos   GET /todos?completed=true
+// GET /todos   GET /todos?completed=true&q=work
 app.get('/todos', function (req, res) {
     var queryParams = req.query; //enables querying
     var filteredTodos = todos;
@@ -42,12 +42,17 @@ app.get('/todos', function (req, res) {
     // if has property && completed === 'true'
     // filteredTodos = _.where(filteredTodos, ?); ?'s some object that you are gonna filter to use.
     //else if has property && completed === 'false'
-    if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+    if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
         filteredTodos = _.where(filteredTodos, {completed: true});
-    } else if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+    } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
         filteredTodos = _.where(filteredTodos, {completed: false});
     }
-
+    // q=work
+    if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
+        filteredTodos = _.filter(filteredTodos, function (todo) {
+            return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+        }); //toLowerCase removes case sensetive while searching.
+    }
     //always convert arrays to json and below code returns 200 automatically if successfull.
     res.json(filteredTodos); //before adding filtering, we wrote json(todos);
 });
@@ -142,7 +147,7 @@ app.put('/todos/:id', function (req, res) {
     }
 
     // HERE
-    _.extend(matchedTodo, validAttributes);
+    _.extend(matchedTodo, validAttributes); // updating
     res.json(matchedTodo); //this automatically sends 200.
 
 });
