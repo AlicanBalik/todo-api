@@ -5,6 +5,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore'); // we are gonna use underscore for refactoring our get and post /todos
+var db = require('./db.js'); // we are gonna access our database.
 
 var app = express(); // we call express variable as a function.
 var PORT = process.env.PORT || 1992;
@@ -92,20 +93,31 @@ app.post('/todos', function (req, res) {
     // Bir nevi filtering.
     //Id kismini yazmamiza gerek yok cunku kod kendisi id belirliyor assagida. Kullanicidan almiyor degeri.
 
-    //this if statement is useful for validating the objects.
-    if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-        return res.status(400).send();                                      //trim removes before and after a string
-    } // 400 = badRequest
+    // //this if statement is useful for validating the objects.
+    // if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
+    //     return res.status(400).send();                                      //trim removes before and after a string
+    // } // 400 = badRequest
+    //
+    // //add id field
+    // body.id = todoNextId++;
+    // //set body.description to trimmed body.description in order to get rid of the spaces.
+    // body.description = body.description.trim();
+    //
+    // //push body into array
+    // todos.push(body);
+    //
+    // res.json(body); //pass back body to user.
+    /////////////////////////
+    //now use post with sequelize
+    //challenge: call create on db.todo
+    //  responsd with 200 and value of todo object.(use .toJSON()
+    //  else, show error (res.status(400).json(err);
+    db.todo.create(body).then(function(todo){
+        res.json(todo.toJSON());
+    }, function(err){
+        res.status(400).json(err);
+    })
 
-    //add id field
-    body.id = todoNextId++;
-    //set body.description to trimmed body.description in order to get rid of the spaces.
-    body.description = body.description.trim();
-
-    //push body into array
-    todos.push(body);
-
-    res.json(body); //pass back body to user.
 });
 
 // DELETE /todos/:id
@@ -152,7 +164,10 @@ app.put('/todos/:id', function (req, res) {
 
 });
 
+//db.sequelize = sequelize; from db.js
+db.sequelize.sync().then(function () {
+    app.listen(PORT, function () {//second one is callback function.
+        console.log('Listening on PORT: ' + PORT);
+    });
+})
 
-app.listen(PORT, function () {//second one is callback function.
-    console.log('Listening on PORT: ' + PORT);
-});
