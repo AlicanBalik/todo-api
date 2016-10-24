@@ -5,7 +5,8 @@ var bcrypt = require('bcrypt');
 var _ = require('underscore');
 
 module.exports = function (sequelize, dataTypes) {
-    return sequelize.define('user', { // 1) table name, 2)attributes
+    //instead of return, define a variable named user so we can use it in classMethods.
+    var user = sequelize.define('user', { // 1) table name, 2)attributes
         email: {
             type: dataTypes.STRING,
             allowNull: false,
@@ -45,6 +46,35 @@ module.exports = function (sequelize, dataTypes) {
                 }
             }
         },
+        classMethods: {
+            authenticate: function (body) {
+                return new Promise(function (resolve, reject) {
+                    if (typeof body.email !== 'string' || typeof body.password !== 'string') {
+                        return reject();
+                    }
+                    user.findOne({
+                        where: {
+                            email: body.email
+                        }
+                    }).then(function (user) {
+                        if (!user) {
+                            // return res.status(401).send(); //401 = auth is possible, but failed.
+                            return reject();
+                        }
+
+                        if (!user || !bcrypt.compareSync(body.password, user.get('password_hash'))) {
+                            // return res.status(401).send(); //401 = auth is possible, but failed.
+                           return reject();
+                        }
+                        resolve(user);
+                        // ^ resolve.json(user.toPublicJSON());
+                    }, function (err) {
+                        // resolve.status(500).send();
+                        reject();
+                    });
+                });
+            }
+        },
         instanceMethods: {
             toPublicJSON: function () {
                 var json = this.toJSON();
@@ -52,4 +82,6 @@ module.exports = function (sequelize, dataTypes) {
             }
         }
     });
+
+    return user; //we did return it here instead of very top.
 };

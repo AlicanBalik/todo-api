@@ -6,6 +6,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore'); // we are gonna use underscore for refactoring our get and post /todos
 var db = require('./db.js'); // we are gonna access our database.
+var bcrypt = require('bcrypt'); // crypting variables.
 
 var app = express(); // we call express variable as a function.
 var PORT = process.env.PORT || 1992;
@@ -165,6 +166,38 @@ app.post('/users', function (req, res) {
     });
 });
 
+app.post('/users/login', function (req, res) {
+    //create handler first, then pick email&password properties.
+    var body = _.pick(req.body, 'email', 'password');
+
+    db.user.authenticate(body).then(function (user) { // in order to use authenticate, create classMethods in user.js
+        res.json(user.toPublicJSON());
+    }, function () {
+        res.status(401).send();
+    });
+    //short way is above.
+    // if (typeof body.email !== 'string' || typeof body.password !== 'string') {
+    //     return res.status(400).send();
+    // }
+    // db.user.findOne({
+    //     where: {
+    //         email: body.email
+    //     }
+    // }).then(function (user) {
+    //     if(!user){
+    //         return res.status(401).send(); //401 = auth is possible, but failed.
+    //     }
+    //
+    //     if(!user || !bcrypt.compareSync(body.password, user.get('password_hash'))){
+    //         return res.status(401).send(); //401 = auth is possible, but failed.
+    //     }
+    //
+    //     res.json(user.toPublicJSON());
+    // }, function (err) {
+    //     res.status(500).send();
+    // });
+});
+
 // DELETE /todos/:id
 app.delete('/todos/:id', function (req, res) {
     var todoId = parseInt(req.params.id, 10);
@@ -247,7 +280,7 @@ app.put('/todos/:id', function (req, res) {
 
 //db.sequelize = sequelize; from db.js
 //{force: true} - use it in sync() if you created new  attrs
-db.sequelize.sync().then(function () {
+db.sequelize.sync({force: true}).then(function () {
     app.listen(PORT, function () {//second one is callback function.
         console.log('Listening on PORT: ' + PORT);
     });
