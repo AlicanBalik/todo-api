@@ -187,33 +187,52 @@ app.delete('/todos/:id', function (req, res) {
 // PUT(update) /todos/:id
 app.put('/todos/:id', function (req, res) {
     var todoId = parseInt(req.params.id, 10);
-    var matchedTodo = _.findWhere(todos, {id: todoId});
+    // var matchedTodo = _.findWhere(todos, {id: todoId}); // we'll do it with sequalize
     var body = _.pick(req.body, 'description', 'completed');
-    var validAttributes = {};
+    // var validAttributes = {};
+    var attributes = {};
 
-    if (!matchedTodo) {
-        return res.status(404).send();
-    }
+    // if (!matchedTodo) { // we'll do it with sequalize
+    //     return res.status(404).send();
+    // }
 
     //to do validation, we don't require that the field exists, if it does, we do require that it meets the standards.
-    if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-        validAttributes.completed = body.completed;
-    } else if (body.hasOwnProperty('completed')) {
-        // Bad -- body has completed property but it isn't a boolean.
-        return res.status(400).send();
+    if (body.hasOwnProperty('completed')) { //&& _.isBoolean(body.completed)
+        attributes.completed = body.completed;
     }
+    // else if (body.hasOwnProperty('completed')) {
+    //     // Bad -- body has completed property but it isn't a boolean.
+    //     return res.status(400).send();
+    // }
 
-    if (body.hasOwnProperty('description') && _.isString(body.completed) && body.description.trim().length > 0) {
-        validAttributes.description = body.description;
-    } else if (body.hasOwnProperty('description')) {
-        // Bad -- body has completed property but it isn't a boolean.
-        return res.status(400).send();
+    if (body.hasOwnProperty('description')) { // && _.isString(body.completed) && body.description.trim().length > 0
+        attributes.description = body.description;
     }
+    // else if (body.hasOwnProperty('description')) {
+    //     // Bad -- body has completed property but it isn't a boolean.
+    //     return res.status(400).send();
+    // }
 
-    // HERE
-    _.extend(matchedTodo, validAttributes); // updating
-    res.json(matchedTodo); //this automatically sends 200.
+    // // HERE
+    // _.extend(matchedTodo, validAttributes); // updating
+    // res.json(matchedTodo); //this automatically sends 200.
 
+    db.todo.findById(todoId).then(function (todo) {
+        if (todo) {
+            todo.update(attributes).then(function (todo) {
+                //for success
+                res.json(todo.toJSON());
+            }, function(e) {
+                //for fail
+                res.status(400).json(e);
+            });
+        } else {
+            res.status(404).send();
+        }
+    }, function () {
+        //only works if find by id fails
+        res.status(500).send();
+    })
 });
 
 //db.sequelize = sequelize; from db.js
