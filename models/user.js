@@ -19,5 +19,14 @@ module.exports = function (sequelize, dataTypes) {
                 len: [6, 100]
             }
         }
+    }, { //Hooks are function that are called before and after (bulk-) creation/updating/deletion and validation.
+        hooks: {
+            beforeValidate: function (user, options) { //gets ran just before validation.
+                // first check if user.email is a string, not numbers
+                if (typeof user.email === 'string') {
+                    user.email = user.email.toLowerCase();
+                }
+            }
+        }
     });
 };
