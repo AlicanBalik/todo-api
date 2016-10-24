@@ -159,7 +159,7 @@ app.post('/users', function (req, res) {
     var body = _.pick(req.body, 'email', 'password');
 
     db.user.create(body).then(function (user) { //inside then, first case is success case, second case is fail,error case.
-        res.json(user.toJSON());
+        res.json(user.toPublicJSON());
     }, function (err) {
         res.status(400).json(err);
     });
@@ -246,6 +246,7 @@ app.put('/todos/:id', function (req, res) {
 });
 
 //db.sequelize = sequelize; from db.js
+//{force: true} - use it in sync() if you created new  attrs
 db.sequelize.sync().then(function () {
     app.listen(PORT, function () {//second one is callback function.
         console.log('Listening on PORT: ' + PORT);
