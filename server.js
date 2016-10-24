@@ -171,7 +171,13 @@ app.post('/users/login', function (req, res) {
     var body = _.pick(req.body, 'email', 'password');
 
     db.user.authenticate(body).then(function (user) { // in order to use authenticate, create classMethods in user.js
-        res.json(user.toPublicJSON());
+        var token = user.generateToken('authentication');
+        // res.json(user.toPublicJSON());
+        if(token){
+            res.header('Auth', token).json(user.toPublicJSON());
+        } else {
+            res.status(401).send();
+        }
     }, function () {
         res.status(401).send();
     });

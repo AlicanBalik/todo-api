@@ -3,6 +3,8 @@
  */
 var bcrypt = require('bcrypt');
 var _ = require('underscore');
+var cryptojs = require('crypto-js');
+var jwt = require('jsonwebtoken');
 
 module.exports = function (sequelize, dataTypes) {
     //instead of return, define a variable named user so we can use it in classMethods.
@@ -64,7 +66,7 @@ module.exports = function (sequelize, dataTypes) {
 
                         if (!user || !bcrypt.compareSync(body.password, user.get('password_hash'))) {
                             // return res.status(401).send(); //401 = auth is possible, but failed.
-                           return reject();
+                            return reject();
                         }
                         resolve(user);
                         // ^ resolve.json(user.toPublicJSON());
@@ -79,6 +81,23 @@ module.exports = function (sequelize, dataTypes) {
             toPublicJSON: function () {
                 var json = this.toJSON();
                 return _.pick(json, 'id', 'email', 'createdAt', 'updatedAt');
+            },
+            generateToken: function (type) { // encrypt data info
+                if (!_.isString(type)) {
+                    return undefined;
+                }
+                try { //install npm install jsonwebtoken --save & npm install crypto-js@3.1.5 --save
+                    var stringData = JSON.stringify({id: this.get('id'), type: type}); //get allows us to access the current instance.
+                    //^ variable takes current id and type and converts it to string.
+                    var encryptedData = cryptojs.AES.encrypt(stringData, 'abc123!@#$%').toString();
+                    var token = jwt.sign({
+                        token: encryptedData
+                    }, 'qwerty098'); //2nd arg is jwt password
+                    return token;
+                } catch (err) {
+                    console.error(e);
+                    return undefined;
+                }
             }
         }
     });
