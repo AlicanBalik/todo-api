@@ -29,6 +29,7 @@ var db = {}; // for exporting multiple files
 
 //set db to todo property.
 db.todo = sequelize.import(__dirname + '/models/todo.js'); // a function that lets you to load in sequelize modules from seperate files. You can keep your app syncorenized
+db.user = sequelize.import(__dirname + '/models/user.js');
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 module.exports = db;// we can set it to a one thing. But if set it to an object variable , module exports can return multiple returns from the file.

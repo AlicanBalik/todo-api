@@ -155,6 +155,16 @@ app.post('/todos', function (req, res) {
 
 });
 
+app.post('/users', function (req, res) {
+    var body = _.pick(req.body, 'email', 'password');
+
+    db.user.create(body).then(function (user) { //inside then, first case is success case, second case is fail,error case.
+        res.json(user.toJSON());
+    }, function (err) {
+        res.status(400).json(err);
+    });
+});
+
 // DELETE /todos/:id
 app.delete('/todos/:id', function (req, res) {
     var todoId = parseInt(req.params.id, 10);
@@ -222,7 +232,7 @@ app.put('/todos/:id', function (req, res) {
             todo.update(attributes).then(function (todo) {
                 //for success
                 res.json(todo.toJSON());
-            }, function(e) {
+            }, function (e) {
                 //for fail
                 res.status(400).json(e);
             });
